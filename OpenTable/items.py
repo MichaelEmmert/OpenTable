@@ -10,6 +10,7 @@ import scrapy
 class OpentableItem(scrapy.Item):
 	name = scrapy.Field()
 	location = scrapy.Field()
+	area = scrapy.Field()
 	cuisine = scrapy.Field()
 	review_count = scrapy.Field()
 	review_link = scrapy.Field()
