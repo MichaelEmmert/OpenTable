@@ -18,3 +18,4 @@ class OpentableItem(scrapy.Item):
 	cost = scrapy.Field()
 	rating = scrapy.Field()
 	promoted = scrapy.Field()
+	location_on_page = scrapy.Field()

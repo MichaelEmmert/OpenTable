@@ -33,27 +33,27 @@ class OpentableSpider(scrapy.Spider):
         full_path = response.meta['full_path']
         last_page = int(response.xpath('//span[@class="js-pagination-page pagination-link  "]/span[@class="underline-hover"]/text()').extract()[-1])
         urls = [full_path[:-2] + str(i) for i in range(0,100*last_page,100)]
-        for url in urls:
-            yield scrapy.Request(url, self.parse_list_page)
+        for page_num, url in enumerate(urls):
+            yield scrapy.Request(url, self.parse_list_page, meta = {'page_num':page_num})
 
     def parse_list_page(self, response):
+        page_num = response.meta['page_num']
         rows = response.xpath('//ul[@class="content-section-list infinite-results-list analytics-results-list"]/li[@class="result content-section-list-row cf with-times"]')
         area = response.xpath('//*[@id="header"]/ol/li[3]/a/span//text()').extract_first()
-        count = 0
-        for row in rows:
-
+        for index, row in enumerate(rows):
+            location_on_page = [page_num, index]
             name = row.xpath('.//span[@class="rest-row-name-text"]/text()').extract_first()
             location = row.xpath('.//span[@class="rest-row-meta--location rest-row-meta-text sfx1388addContent"]//text()').extract_first()
             cuisine = row.xpath('.//span[@class="rest-row-meta--cuisine rest-row-meta-text sfx1388addContent"]//text()').extract_first()
             review_count = row.xpath('.//a//span[@class="underline-hover"]//text()').extract_first()
             review_link = row.xpath('.//a//@href').extract_first()
             link = row.xpath('.//div//@href').extract_first()
-            # cost not collecting all $$
             cost = row.xpath('.//i//text()').extract_first()
             rating = row.xpath('.//*[@class="star-rating-score"]//@aria-label').extract_first()
             promoted = row.xpath('.//span[@class="promoted-badge"]//text()').extract_first()
 
             item = OpentableItem()
+            item['location_on_page'] = location_on_page
             item['name'] = name
             item['area'] = area
             item['location'] = location
@@ -64,6 +64,7 @@ class OpentableSpider(scrapy.Spider):
             item['cost'] = cost
             item['rating'] = rating
             item['promoted'] = promoted
-            count +=1
             
             yield item
+
+#    def parse_each_link(self, response):
