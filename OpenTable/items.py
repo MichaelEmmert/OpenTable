@@ -19,3 +19,5 @@ class OpentableItem(scrapy.Item):
 	rating = scrapy.Field()
 	promoted = scrapy.Field()
 	location_on_page = scrapy.Field()
+	bookings_today = scrapy.Field()
+	address = scrapy.Field()

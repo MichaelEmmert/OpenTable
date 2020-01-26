@@ -3,7 +3,7 @@ from scrapy.exporters import CsvItemExporter
 class WriteItemPipeline(object):
 
     def __init__(self):
-        self.filename = 'OpenTable3.csv'
+        self.filename = 'OpenTable4.csv'
 
     def open_spider(self, spider):
         self.csvfile = open(self.filename, 'wb')

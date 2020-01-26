@@ -52,19 +52,37 @@ class OpentableSpider(scrapy.Spider):
             rating = row.xpath('.//*[@class="star-rating-score"]//@aria-label').extract_first()
             promoted = row.xpath('.//span[@class="promoted-badge"]//text()').extract_first()
 
-            item = OpentableItem()
-            item['location_on_page'] = location_on_page
-            item['name'] = name
-            item['area'] = area
-            item['location'] = location
-            item['cuisine'] = cuisine
-            item['review_count'] = review_count
-            item['review_link'] = review_link
-            item['link'] = link
-            item['cost'] = cost
-            item['rating'] = rating
-            item['promoted'] = promoted
-            
-            yield item
-
-#    def parse_each_link(self, response):
+            yield scrapy.Request(link, self.parse_each_link, 
+                meta = {
+                'location_on_page': location_on_page,
+                'name': name,
+                'area': area,
+                'location': location,
+                'cuisine': cuisine,
+                'review_count':review_count,
+                'review_link': review_link,
+                'link': link,
+                'cost': cost,
+                'rating' : rating,
+                'promoted': promoted
+                })
+    
+    def parse_each_link(self, response):
+        bookings_today = response.xpath('//*[@id="js-page"]//*[contains(text(),"Booked")]//text()').extract_first()
+        address = response.xpath('//*[@id="js-page"]//a[@target="_blank"]//@href').extract_first()
+        item = OpentableItem()
+        item['location_on_page'] = response.meta['location_on_page']
+        item['name'] = response.meta['name']
+        item['area'] = response.meta['area']
+        item['location'] = response.meta['location']
+        item['cuisine'] = response.meta['cuisine']
+        item['review_count'] = response.meta['review_count']
+        item['review_link'] = response.meta['review_link']
+        item['link'] = response.meta['link']
+        item['cost'] = response.meta['cost']
+        item['rating'] = response.meta['rating']
+        item['promoted'] = response.meta['promoted']
+        item['bookings_today'] = bookings_today
+        item['address'] = address
+        
+        yield item
