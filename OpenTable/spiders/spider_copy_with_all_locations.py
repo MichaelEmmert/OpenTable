@@ -4,10 +4,33 @@ from OpenTable.items import OpentableItem
 class OpentableSpider(scrapy.Spider):
     name = 'opentable_spider'
     allowed_urls = ['https://www.opentable.com']
-    start_urls = ['https://www.opentable.com/chicago-illinois-restaurant-listings?covers=2&currentview=list&datetime=2020-01-28+19%3A00&latitude=41.879016&longitude=-87.85132&metroid=3&size=100&sort=Popularity&from=100']
+    start_urls = ['https://www.opentable.com/start/home']
 
     def parse(self, response):
-        full_path = 'https://www.opentable.com/chicago-illinois-restaurant-listings?covers=2&currentview=list&datetime=2020-01-28+19%3A00&latitude=41.879016&longitude=-87.85132&metroid=3&size=100&sort=Popularity&from=00'
+        pagelinks = response.xpath('//div[@class="small-block-grid-2 medium-block-grid-4"]//a/@href').extract()
+        for page_link in pagelinks:
+            if page_link[:4] != 'http':
+                page_link = 'https://www.opentable.com' + page_link
+            else:
+                page_link
+            yield scrapy.Request(page_link, self.parse_location)
+
+    def parse_location(self, response):
+        list_of_link_info = [el.split(':') for el in response.xpath('//div[contains(@id,"dtp-picker")]/@data-autocomplete-options').extract_first().split(",")]
+        for i in list_of_link_info:
+            if i[0] == '"latitude"':
+                lat = i[1]
+            elif i[0] == '"longitude"':
+                lon = i[1]
+            elif i[0] == '"metroId"':
+                metroid = i[1]
+
+                loc_link = response.xpath('//div[@class="_2y-QX-z1W2hbZso-ywO9rL"]//a/@href').extract()[-1]
+                full_path = loc_link + f'?covers=2&currentview=list&datetime=2020-01-22+19%3A00&latitude={lat}&longitude={lon}&metroid={metroid}&size=100&sort=Popularity&from=00'
+                yield scrapy.Request(full_path, self.parse_location_by_row, meta = {'full_path':full_path})
+
+    def parse_location_by_row(self, response):
+        full_path = response.meta['full_path']
         last_page = int(response.xpath('//span[@class="js-pagination-page pagination-link  "]/span[@class="underline-hover"]/text()').extract()[-1])
         urls = [full_path[:-2] + str(i) for i in range(0,100*last_page,100)]
         for page_num, url in enumerate(urls):
