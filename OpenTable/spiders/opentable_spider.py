@@ -68,7 +68,7 @@ class OpentableSpider(scrapy.Spider):
                 })
     
     def parse_each_link(self, response):
-        bookings_today = response.xpath('//*[@id="js-page"]//*[contains(text(),"Booked")]//text()').extract_first()
+        bookings_today =  response.xpath('//*[@id="js-page"]/div[2]/aside/div/div[2]/div/div[1]/div[2]/div/div[1]/div[2]/div[3]/div[1]/div[2]/div/span//text()').extract_first()
         address = response.xpath('//*[@id="js-page"]//a[@target="_blank"]//@href').extract_first()
         item = OpentableItem()
         item['location_on_page'] = response.meta['location_on_page']
@@ -86,3 +86,4 @@ class OpentableSpider(scrapy.Spider):
         item['address'] = address
         
         yield item
+        
