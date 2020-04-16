@@ -1,3 +1,5 @@
 csv
 presentation
-.ipynb-checkpoints
+.*
+
+image
